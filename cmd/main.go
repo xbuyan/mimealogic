@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// Let's pretend the farm was watered 14 hours ago
-	lastWatered := time.Now().Add(-14 * time.Hour)
+	lastWatered := time.Now().Add(-24 * time.Hour)
 
 	// Calculate the hours passed
 	hoursPassed := time.Since(lastWatered).Hours()
