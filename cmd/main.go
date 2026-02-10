@@ -2,24 +2,47 @@ package main
 
 import (
 	"fmt"
-	"mimealogic/pkg" // Your math engine
-	"time"           // The time library
+	"mimealogic/pkg"
+	"os"             // New: Allows us to read/write files
+	"time"
 )
 
 func main() {
-	// Let's pretend the farm was watered 14 hours ago
-	lastWatered := time.Now().Add(-24 * time.Hour)
+	fileName := "last_watered.txt"
 
-	// Calculate the hours passed
+	// 1. TRY TO READ THE FILE
+	// os.ReadFile looks for the file on your disk.
+	data, err := os.ReadFile(fileName)
+
+	var lastWatered time.Time
+
+	if err != nil {
+		// If the file doesn't exist, we assume this is the first time running.
+		fmt.Println("No previous record found. Setting initial time...")
+		lastWatered = time.Now().Add(-24 * time.Hour) // Default to 1 day ago
+	} else {
+		// If we found the file, we convert the text inside back into a "Time" object.
+		lastWatered, _ = time.Parse(time.RFC3339, string(data))
+	}
+
+	// 2. CALCULATE AND PROCESS (Your existing math logic)
 	hoursPassed := time.Since(lastWatered).Hours()
+	currentMoisture := pkg.PredictMoisture(85.0, 0.06, hoursPassed)
 
-	// Use our O(1) math from pkg/engine.go
-	initialMoisture := 85.0
-	evaporationRate := 0.06 
-	currentMoisture := pkg.PredictMoisture(initialMoisture, evaporationRate, hoursPassed)
+	fmt.Println("======= MIMEA LOGIC: PERSISTENCE MODE =======")
+	fmt.Printf("Last Watered:  %v\n", lastWatered.Format("15:04 (Jan 02)"))
+	fmt.Printf("Current Soil Moisture: %.2f%%\n", currentMoisture)
 
-	// Output the results
-	fmt.Println("======= MIMEA LOGIC: SDG 6 SYSTEM =======")
-	fmt.Printf("Time Elapsed:  %.2f hours\n", hoursPassed)
-	fmt.Printf("Soil Moisture: %.2f%%\n", currentMoisture)
+	// 3. THE DECISION & THE UPDATE
+	if currentMoisture < 30.0 {
+		fmt.Println("ACTION: Watering now...")
+		
+		// Record the NEW watering time to the file
+		newTime := time.Now().Format(time.RFC3339)
+		os.WriteFile(fileName, []byte(newTime), 0644)
+		
+		fmt.Println("SUCCESS: Ledger updated with new timestamp.")
+	} else {
+		fmt.Println("ACTION: Soil is fine. No update needed.")
+	}
 }
