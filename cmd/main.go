@@ -1,28 +1,25 @@
 package main
 
-
-import(
+import (
 	"fmt"
-	"mimealogic/pkg"
+	"mimealogic/pkg" // Your math engine
+	"time"           // The time library
 )
 
-func main(){
+func main() {
+	// Let's pretend the farm was watered 14 hours ago
+	lastWatered := time.Now().Add(-14 * time.Hour)
 
-	//1. set initial state
+	// Calculate the hours passed
+	hoursPassed := time.Since(lastWatered).Hours()
+
+	// Use our O(1) math from pkg/engine.go
 	initialMoisture := 85.0
-	evaporationRate := 0.05
-	timeElapsed := 12.0
+	evaporationRate := 0.06 
+	currentMoisture := pkg.PredictMoisture(initialMoisture, evaporationRate, hoursPassed)
 
-	//2. Call the math engine
-
-	currentMoisture := pkg.PredictMoisture(initialMoisture, evaporationRate, timeElapsed)
-
-	fmt.Println("-------MIMEA LOGIC: SDG6 OPTIMIZER------")
-	fmt.Printf("Current Soil Moisture: %.2f%%\n", currentMoisture)
-
-	if currentMoisture < 30.0{
-		fmt.Println("STATUS: Water needed. Initializing Smart Valve")
-	}else{
-		fmt.Println("STATUS: Moisture sufficient. Conserving water.")
-	}
+	// Output the results
+	fmt.Println("======= MIMEA LOGIC: SDG 6 SYSTEM =======")
+	fmt.Printf("Time Elapsed:  %.2f hours\n", hoursPassed)
+	fmt.Printf("Soil Moisture: %.2f%%\n", currentMoisture)
 }
