@@ -8,14 +8,18 @@ import (
 )
 
 func main() {
+	// --- CONFIGURATION ---
+	// Defining these at the top makes your code "Elite"
 	fileName := "last_watered.txt"
+	checkIntervalSeconds := 5 
+	initialMoisture := 85.0
+	evaporationRate := 0.06
 
-	fmt.Println("MimeaLogic Agent started. Press Ctrl+C to stop.")
+	fmt.Printf("MimeaLogic Agent started (Checking every %d seconds)\n", checkIntervalSeconds)
 	fmt.Println("--------------------------------------------")
 
-	// The 'for' loop without conditions runs forever
 	for {
-		// 1. READ the last time from the file
+		// 1. READ persistence file
 		data, err := os.ReadFile(fileName)
 		var lastWatered time.Time
 
@@ -25,11 +29,11 @@ func main() {
 			lastWatered, _ = time.Parse(time.RFC3339, string(data))
 		}
 
-		// 2. CALCULATE the current state
+		// 2. CALCULATE
 		hoursPassed := time.Since(lastWatered).Hours()
-		currentMoisture := pkg.PredictMoisture(85.0, 0.06, hoursPassed)
+		currentMoisture := pkg.PredictMoisture(initialMoisture, evaporationRate, hoursPassed)
 
-		// 3. DISPLAY the status
+		// 3. DISPLAY
 		fmt.Printf("[%s] Moisture: %.2f%% | ", time.Now().Format("15:04:05"), currentMoisture)
 
 		// 4. DECIDE
@@ -38,12 +42,11 @@ func main() {
 			newTime := time.Now().Format(time.RFC3339)
 			os.WriteFile(fileName, []byte(newTime), 0644)
 		} else {
-			fmt.Println("ACTION: OK. Conserving water.")
+			fmt.Println("ACTION: OK.")
 		}
 
-		// 5. THE "ELITE" PAUSE
-		// We tell the CPU to do nothing for 5 seconds.
-		// Without this, the computer would run this loop 1,000,000 times a second!
-		time.Sleep(5 * time.Second)
+		// 5. PAUSE (Using the strict type conversion we discussed)
+		pauseDuration := time.Duration(checkIntervalSeconds) * time.Second
+		time.Sleep(pauseDuration)
 	}
 }
