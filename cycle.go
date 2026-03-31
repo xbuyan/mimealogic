@@ -8,7 +8,6 @@ import (
 	"mimealogic/pkg"
 )
 
-// runCycle executes one sensor-read → decision → actuate iteration.
 func runCycle(
 	engine *pkg.Engine,
 	hardware *HardwareController,
@@ -17,6 +16,7 @@ func runCycle(
 	logger *Logger,
 	config Config,
 ) {
+	// Defaults to 24 hours ago if file is missing or empty
 	lastWatered := stateManager.GetOrDefault(time.Now().Add(-24 * time.Hour))
 
 	hoursPassed := time.Since(lastWatered).Hours()
@@ -34,6 +34,7 @@ func runCycle(
 			currentMoisture, config.MoistureThreshold)
 
 		targetMoisture := config.MoistureThreshold + 20.0
+		// Fixed: Added pkg. prefix to access the exported function
 		wateringDuration := pkg.CalculateWateringDuration(currentMoisture, targetMoisture)
 
 		logger.Log("💦 Watering for %v to reach %.1f%% moisture",
@@ -50,7 +51,6 @@ func runCycle(
 	}
 }
 
-// formatDuration converts a float hour value to a human-readable string.
 func formatDuration(hours float64) string {
 	if hours < 1 {
 		return fmt.Sprintf("%d minutes", int(hours*60))
