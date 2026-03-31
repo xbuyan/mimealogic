@@ -33,15 +33,15 @@ func startWebInterface(engine *pkg.Engine, metrics *Metrics, stateManager *State
 			</head>
 			<body>
 				<div class="card">
-					<h1>🌿 MimeaLogic Live</h1>
+					<h1>ð¿ MimeaLogic Live</h1>
 					<p>Current Soil Moisture</p>
 					<div class="moisture-value">%.1f%%</div>
 		`, currentMoisture)
 
 		if currentMoisture < config.MoistureThreshold {
-			fmt.Fprintf(w, "<p class='status-warn'>⚠️ Status: Watering Required</p>")
+			fmt.Fprintf(w, "<p class='status-warn'>â ï¸ Status: Watering Required</p>")
 		} else {
-			fmt.Fprintf(w, "<p class='status-ok'>✅ Status: Optimal</p>")
+			fmt.Fprintf(w, "<p class='status-ok'>â Status: Optimal</p>")
 		}
 
 		// Add logic stats
