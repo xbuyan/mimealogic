@@ -8,12 +8,15 @@ import (
 
 func startWebInterface(metrics *Metrics) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "<h1>🌿 MimeaLogic Live Status</h1>")
-		fmt.Fprintf(w, "<p>Agent is currently: <b>RUNNING</b></p>")
-		// Add more stats here if you have time!
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, "<html><body style='font-family:sans-serif; text-align:center; padding-top:50px;'>")
+		fmt.Fprintf(w, "<h1>🌿 MimeaLogic Agent: ONLINE</h1>")
+		fmt.Fprintf(w, "<p>The plant logic engine is currently running in the background.</p>")
+		fmt.Fprintf(w, "<p><b>System Status:</b> Operational</p>")
+		fmt.Fprintf(w, "</body></html>")
 	})
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("PORT") // Railway provides the port via environment variable
 	if port == "" {
 		port = "8080"
 	}
