@@ -40,7 +40,8 @@ func main() {
 
 	ticker := time.NewTicker(config.CheckInterval)
 	defer ticker.Stop()
-	go startWebInterface(metrics)
+	// Start the web interface in a background goroutine
+	go startWebInterface(engine, metrics, stateManager, config)
 
 	for {
 		select {
