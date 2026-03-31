@@ -15,46 +15,38 @@ const (
 	MinMoisture            = 0.0
 )
 
-// Engine encapsulates the prediction logic with thread-safe caching
+// Engine encapsulates the prediction logic with thread-safe caching.
 type Engine struct {
 	mu              sync.RWMutex
 	cachedMoisture  float64
 	lastCalculation time.Time
 }
 
-// NewEngine creates a new instance of the math engine
+// NewEngine creates a new instance of the math engine.
 func NewEngine() *Engine {
 	return &Engine{}
 }
 
-// PredictMoisture calculates the moisture level using O(1) complexity
-// with optional caching for repeated calls
+// PredictMoisture calculates moisture level with O(1) complexity.
+// Formula: M = M0 * e^(-k * t)
 func (e *Engine) PredictMoisture(initial, decayRate, hours float64) float64 {
-	// Clamp inputs to valid ranges
 	initial = math.Max(MinMoisture, math.Min(MaxMoisture, initial))
 	hours = math.Max(0, hours)
-
-	// Formula: M = M0 * e^(-k * t)
 	moisture := initial * math.Exp(-decayRate*hours)
-
-	// Clamp output to realistic range
 	return math.Max(MinMoisture, math.Min(MaxMoisture, moisture))
 }
 
-// PredictMoistureWithCache calculates moisture but caches results for the same hour
-func (e *Engine) PredictMoistureWithCache(initial, decayRate float64, hours float64) float64 {
+// PredictMoistureWithCache returns a cached result when within the same hour.
+func (e *Engine) PredictMoistureWithCache(initial, decayRate, hours float64) float64 {
 	e.mu.RLock()
-	// Check if we have a valid cache (within same hour)
 	if e.lastCalculation.Add(time.Hour).After(time.Now()) && e.cachedMoisture > 0 {
 		defer e.mu.RUnlock()
 		return e.cachedMoisture
 	}
 	e.mu.RUnlock()
 
-	// Calculate new value
 	result := e.PredictMoisture(initial, decayRate, hours)
 
-	// Update cache
 	e.mu.Lock()
 	e.cachedMoisture = result
 	e.lastCalculation = time.Now()
@@ -63,17 +55,17 @@ func (e *Engine) PredictMoistureWithCache(initial, decayRate float64, hours floa
 	return result
 }
 
-// CalculateWateringDuration determines optimal watering time based on soil deficit
+// CalculateWateringDuration returns the time needed to bring moisture from
+// current to target level. Returns 0 if already at or above target.
 func CalculateWateringDuration(currentMoisture, targetMoisture float64) time.Duration {
 	if currentMoisture >= targetMoisture {
 		return 0
 	}
 
 	deficit := targetMoisture - currentMoisture
-	// Assume 1 second of watering increases moisture by 2% (tunable parameter)
+	// 1 second of watering ≈ 2% moisture increase (tunable)
 	wateringSeconds := int(deficit / 2.0)
 
-	// Clamp between 1 and 60 seconds
 	if wateringSeconds < 1 {
 		wateringSeconds = 1
 	}
